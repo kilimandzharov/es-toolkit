@@ -116,7 +116,6 @@ describe('defaultsDeep', () => {
 
   it('should not indirectly merge `Object` properties', () => {
     defaultsDeep({}, { constructor: { a: 1 } });
-
     const actual = 'a' in Object;
     delete (Object as any).a;
 
@@ -163,6 +162,7 @@ describe('defaultsDeep', () => {
       function Foo(this: any) {
         this.a = 1;
       }
+
       Foo.prototype.b = 2;
 
       const expected = { a: 1, b: 2 };
@@ -173,6 +173,7 @@ describe('defaultsDeep', () => {
 
     it('should not skip a trailing function source', () => {
       function fn() {}
+
       fn.b = 2;
 
       expect(defaultsDeep({}, { a: 1 }, fn)).toEqual({ a: 1, b: 2 });
@@ -208,6 +209,7 @@ describe('defaultsDeep', () => {
       const expected = { a: 0, b: 2, c: 3 };
 
       function fn() {}
+
       fn.a = array[0];
       fn.b = array[1];
       fn.c = array[2];
@@ -222,6 +224,24 @@ describe('defaultsDeep', () => {
       }
       expect(result).toEqual(expected);
     });
+  });
+
+  it('should work with objects in arrays', () => {
+    const target = { a: [{ foo: 1 }] };
+    const source = { a: [{ bar: 2 }] };
+
+    const expected = { a: [{ foo: 1, bar: 2 }] };
+
+    expect(defaultsDeep(target, source)).toEqual(expected);
+  });
+
+  it('should append additional elements from the source array to the target array if the source array is longer than the target array', () => {
+    const target = { a: [{ foo: 1 }] };
+    const source = { a: [{ foo: 2 }, { some: 'hello' }] };
+
+    const expected = { a: [{ foo: 1 }, { some: 'hello' }] };
+
+    expect(defaultsDeep(target, source)).toEqual(expected);
   });
 
   it('should match the type of lodash', () => {
